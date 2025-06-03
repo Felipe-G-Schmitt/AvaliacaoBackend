@@ -1,15 +1,20 @@
 const express = require('express');
 const database = require('./config/database');
-const userController = require('./controllers/userController');
 const userRoutes = require('./routes/userRoutes');
+const registerMiddle = require('./middlewares/registerMiddle');
+const loginMiddle = require('./middlewares/loginMiddle');
+const categoryRoutes = require('./routes/categoryRoutes');
+const productRoutes = require('./routes/productRoutes');
 
 const app = express();
 app.use(express.json());
 
-app.post('/register', userController.createUser);
-app.post('/login', userController.login);
+app.post('/register', registerMiddle.createUser);
+app.post('/login', loginMiddle.login);
 
 app.use('/api', userRoutes);
+app.use('/api', categoryRoutes);
+app.use('/api', productRoutes);
 
 database.db.sync({ force: true })
     .then(() => {
