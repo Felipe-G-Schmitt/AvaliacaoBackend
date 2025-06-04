@@ -12,7 +12,7 @@ class registerMiddle {
 
         const emailExiste = await User.findOne({ where: { email } });
         if (emailExiste) {
-            return res.status(400).json({ message: "Esse email pertence a outro usuário" });
+            return res.status(409).json({ message: "Esse email pertence a outro usuário" });
         }
 
         const senhaCriptografada = await bcrypt.hash(senha, saltRounds);

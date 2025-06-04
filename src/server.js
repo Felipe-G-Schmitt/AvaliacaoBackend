@@ -1,20 +1,39 @@
 const express = require('express');
 const database = require('./config/database');
 const userRoutes = require('./routes/userRoutes');
-const registerMiddle = require('./middlewares/registerMiddle');
+const authMiddle = require('./middlewares/authMiddle');
 const loginMiddle = require('./middlewares/loginMiddle');
 const categoryRoutes = require('./routes/categoryRoutes');
 const productRoutes = require('./routes/productRoutes');
+const orderRoutes = require('./routes/orderRoutes');
+const registerRoutes = require('./routes/registerRoutes');
+const errorMiddle = require('./middlewares/errorMiddle');
 
 const app = express();
 app.use(express.json());
+app.get('/', (req, res) => {
+    res.send('API de Avaliação Backend');
+});
 
-app.post('/register', registerMiddle.createUser);
+app.use('/api', registerRoutes);
 app.post('/login', loginMiddle.login);
 
+app.use(authMiddle.ValidarToken);
 app.use('/api', userRoutes);
 app.use('/api', categoryRoutes);
 app.use('/api', productRoutes);
+app.use('/api', orderRoutes);
+
+// app.use(errorMiddle);
+
+app.use((err, req, res, next) => {
+    if (err.statusCode) {
+        return res.status(err.statusCode).json({ message: err.message });
+    }
+    console.error(err);
+    res.status(500).json({ message: 'Erro interno do servidor' });
+});
+
 
 database.db.sync({ force: true })
     .then(() => {

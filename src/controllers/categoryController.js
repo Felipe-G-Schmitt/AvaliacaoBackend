@@ -25,7 +25,7 @@ class categoryController {
 
         const categoriaExiste = await Category.findOne({ where: { name: nome } });
         if (categoriaExiste) {
-            return res.status(400).json({ message: "Essa categoria já existe" });
+            return res.status(409).json({ message: "Essa categoria já existe" });
         }
 
         const category = await Category.create({ name: nome });
@@ -48,7 +48,7 @@ class categoryController {
 
         const categoriaExiste = await Category.findOne({ where: { name: nome } });
         if (categoriaExiste && categoriaExiste.id !== id) {
-            return res.status(400).json({ message: "Essa categoria já existe" });
+            return res.status(409).json({ message: "Essa categoria já existe" });
         }
 
         category.name = nome;

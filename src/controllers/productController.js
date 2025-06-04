@@ -25,7 +25,7 @@ class productController {
 
         const produtoExiste = await Product.findOne({ where: { name: nome } });
         if (produtoExiste) {
-            return res.status(400).json({ message: "Esse produto já existe" });
+            return res.status(409).json({ message: "Esse produto já existe" });
         }
 
         const product = await Product.create({ name: nome, price : preco, categoryId: categoryId });
@@ -48,7 +48,7 @@ class productController {
 
         const produtoExiste = await Product.findOne({ where: { name: nome } });
         if (produtoExiste && produtoExiste.id !== id) {
-            return res.status(400).json({ message: "Esse produto já existe" });
+            return res.status(409).json({ message: "Esse produto já existe" });
         }
 
         product.name = nome;
