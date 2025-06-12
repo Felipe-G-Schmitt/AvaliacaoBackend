@@ -1,3 +1,4 @@
+const NotFound = require('../errors/not-found');
 const Product = require('../models/product')
 
 class productController {
@@ -11,7 +12,7 @@ class productController {
         const product = await Product.findByPk(id);
 
         if (!product) {
-            return res.status(404).json({ message: "Produto não encontrado" });
+            throw new NotFound(`Produto com ID ${id} não encontrado`);
         }
 
         res.json(product);
@@ -43,7 +44,7 @@ class productController {
 
         const product = await Product.findByPk(id);
         if (!product) {
-            return res.status(404).json({ message: "Produto não encontrado" });
+            throw new NotFound(`Produto com ID ${id} não encontrado`);
         }
 
         const produtoExiste = await Product.findOne({ where: { name: nome } });
@@ -65,7 +66,7 @@ class productController {
 
         const product = await Product.findByPk(id);
         if (!product) {
-            return res.status(404).json({ message: "Produto não encontrado" });
+            throw new NotFound(`Produto com ID ${id} não encontrado`);
         }
 
         await product.destroy();

@@ -29,3 +29,5 @@ class ProdOrder {
         });
     }
 }
+
+module.exports = (new ProdOrder).model;
