@@ -2,22 +2,21 @@ const NotFound = require('../errors/not-found');
 const MissingValues = require('../errors/missing-values');
 const Conflict = require('../errors/conflict');
 const Product = require('../models/product')
+const { generateProductLinks } = require('../utils/hypermedia');
 
 class productController {
     async getProduct(req, res) {
-        const products = await Product.findAll();
+        const products = await Product.findAll(); 
         return res.json(products);
     }
 
-    async getProductById(req, res) {  
+    async getProductById(req, res) {
         const { id } = req.params;
-        const product = await Product.findByPk(id);
+        const product = await Product.findByPk(id); 
 
-        if (!product) {
-            throw new NotFound(`Produto com ID ${id} não encontrado`);
-        }
+        if (!product) throw new NotFound(`Produto com ID ${id} não encontrado`);
 
-        res.json(product);
+        return res.json(generateProductLinks(product.toJSON())); //hypermidia
     }
 
     async createProduct(req, res) {
@@ -31,7 +30,7 @@ class productController {
             throw new Conflict(`O produto ${nome} já existe`);
         }
 
-        const product = await Product.create({ name: nome, price : preco, categoryId: categoryId });
+        const product = await Product.create({ name: nome, price : preco, categoryId: categoryId }); 
 
         res.status(201).json(product);
     }

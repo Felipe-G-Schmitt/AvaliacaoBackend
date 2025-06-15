@@ -4,6 +4,7 @@ const NotFound = require('../errors/not-found');
 const MissingValues = require('../errors/missing-values');
 const Conflict = require('../errors/conflict');
 const EmailValidade = require('../errors/email-validate');
+const { generateUserLinks } = require('../utils/hypermedia');
 
 const saltRounds = 10;
 
@@ -30,32 +31,36 @@ class UserController {
         return res.status(201).json(user)
     }
 
-    async getUser(req, res, next) {
-        try{
-            const users = await User.findAll();
-            return res.json(users);
-        } catch (error) {
-            next(error);
+    async getUser(req, res) {
+        const users = await User.findAll();
+        const usersWithLinks = users.map(user => generateUserLinks(user.toJSON()));
+
+        if( !users || users.length === 0) {
+            throw new NotFound('Nenhum usuário encontrado');
         }
+        
+        return res.json(usersWithLinks);
     }
 
     async getUserById(req, res, next) {  
         const { id } = req.params;
         const user = await User.findByPk(id);
+        const userWithLinks = generateUserLinks(user.toJSON());
 
         if (!user) {
             throw new NotFound(`Usuário com ID ${id} não encontrado`);
         }
 
-        res.json(user);
+        return res.json(userWithLinks);
     }
 
     async UpdateUser(req, res, next) {
         const { id } = req.params;
         const { nome, email, senha } = req.body;
+        const userWithLinks = generateUserLinks(user.toJSON());
 
         if (!nome || !email || !senha) {
-            throw new MissingValues({ nome, email, senha});
+            throw new MissingValues({ nome, email, senha });
         }
 
         const user = await User.findByPk(id);
@@ -72,24 +77,33 @@ class UserController {
 
         user.name = nome;
         user.email = email;
-        user.senha = senhaCriptografada;
+        user.password = senhaCriptografada;
 
-        await user.save();
+        await user.save();     
 
-        res.json(user);
+        res.json(userWithLinks);
     }
+
 
     async DeleteUser(req, res, next) {
         const { id } = req.params;
 
         const user = await User.findByPk(id);
+        const userWithLinks = generateUserLinks(user.toJSON());
+        
         if (!user) {
             throw new NotFound(`Usuário com ID ${id} não encontrado`);
         }
 
         await user.destroy();
 
-        res.status(204).send({ message: "Usuário deletado" });
+        res.status(200).json({
+            message: "Usuário deletado com sucesso",
+                links: [
+                { rel: "create", method: "POST", href: "/users" },
+                { rel: "all", method: "GET", href: "/users" }
+            ]
+        });
     }
 }
 
