@@ -1,4 +1,6 @@
 const database = require('../config/database');
+const Order = require('./order');
+const Product = require('./product');
 
 class ProdOrder {
     constructor() {
@@ -27,6 +29,21 @@ class ProdOrder {
                 }
             }
         });
+
+        Order.belongsToMany(Product, {
+            through: this.model,
+            as: 'products',
+            foreignKey: 'orderId',
+            otherKey: 'productId'
+        });
+
+        Product.belongsToMany(Order, {
+            through: this.model,
+            as: 'orders',
+            foreignKey: 'productId',
+            otherKey: 'orderId'
+        });
+
     }
 }
 

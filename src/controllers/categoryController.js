@@ -1,3 +1,6 @@
+const Conflict = require('../errors/conflict');
+const MissingValues = require('../errors/missing-values');
+const NotFound = require('../errors/not-found');
 const Category = require('../models/category')
 
 class categoryController {
@@ -11,7 +14,7 @@ class categoryController {
         const category = await Category.findByPk(id);
 
         if (!category) {
-            return res.status(404).json({ message: "Categoria não encontrado" });
+            throw new NotFound(`Categoria com ID ${id} não encontrada`);
         }
 
         res.json(category);
@@ -20,12 +23,12 @@ class categoryController {
     async createCategory(req, res) {
         const { nome } = req.body;
         if (!nome) {
-            return res.status(400).json({ message: "Nome obrigatório" });
+            throw new MissingValues({ nome });
         }
 
         const categoriaExiste = await Category.findOne({ where: { name: nome } });
         if (categoriaExiste) {
-            return res.status(409).json({ message: "Essa categoria já existe" });
+            throw new Conflict(`A categoria ${nome} já existe`);
         }
 
         const category = await Category.create({ name: nome });
@@ -38,17 +41,17 @@ class categoryController {
         const { nome } = req.body;
 
         if (!nome) {
-            return res.status(400).json({ message: "Nome obrigatório" });
+            throw new MissingValues({ nome });
         }
 
         const category = await Category.findByPk(id);
         if (!category) {
-            return res.status(404).json({ message: "Usuário não encontrado" });
+            throw new NotFound(`Categoria com ID ${id} não encontrada`);
         }
 
         const categoriaExiste = await Category.findOne({ where: { name: nome } });
         if (categoriaExiste && categoriaExiste.id !== id) {
-            return res.status(409).json({ message: "Essa categoria já existe" });
+            throw new Conflict(`A categoria ${nome} já existe`);
         }
 
         category.name = nome;
@@ -63,7 +66,7 @@ class categoryController {
 
         const category = await Category.findByPk(id);
         if (!category) {
-            return res.status(404).json({ message: "Categoria não encontrada" });
+            throw new NotFound(`Categoria com ID ${id} não encontrada`);
         }
 
         await category.destroy();

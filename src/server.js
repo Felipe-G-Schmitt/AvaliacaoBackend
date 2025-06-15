@@ -7,7 +7,7 @@ const categoryRoutes = require('./routes/categoryRoutes');
 const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const registerRoutes = require('./routes/registerRoutes');
-const errorMiddle = require('./middlewares/errorMiddle');
+const errorHandler = require('./errors/errorMiddle');
 
 const app = express();
 app.use(express.json());
@@ -16,7 +16,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api', registerRoutes);
-app.post('/login', loginMiddle.login);
+app.post('/api/login', loginMiddle.login);
 
 app.use(authMiddle.ValidarToken);
 app.use('/api', userRoutes);
@@ -24,14 +24,12 @@ app.use('/api', categoryRoutes);
 app.use('/api', productRoutes);
 app.use('/api', orderRoutes);
 
-// app.use(errorMiddle);
-
 app.use((err, req, res, next) => {
     if (err.statusCode) {
         return res.status(err.statusCode).json({ message: err.message });
     }
     console.error(err);
-    res.status(500).json({ message: 'Erro interno do servidor' });
+    throw new errorHandler(err, req, res, next);
 });
 
 

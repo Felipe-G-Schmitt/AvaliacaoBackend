@@ -1,4 +1,6 @@
 const NotFound = require('../errors/not-found');
+const MissingValues = require('../errors/missing-values');
+const Conflict = require('../errors/conflict');
 const Product = require('../models/product')
 
 class productController {
@@ -21,12 +23,12 @@ class productController {
     async createProduct(req, res) {
         const { nome, preco, categoryId } = req.body;
         if (!nome || !preco || !categoryId) {
-            return res.status(400).json({ message: "Nome, preço e categoria são obrigatórios" });
+            throw new MissingValues({ nome, preco, categoryId });
         }
 
         const produtoExiste = await Product.findOne({ where: { name: nome } });
         if (produtoExiste) {
-            return res.status(409).json({ message: "Esse produto já existe" });
+            throw new Conflict(`O produto ${nome} já existe`);
         }
 
         const product = await Product.create({ name: nome, price : preco, categoryId: categoryId });
@@ -39,7 +41,7 @@ class productController {
         const { nome, preco, categoryId } = req.body;
 
         if (!nome || !preco || !categoryId) {
-            return res.status(400).json({ message: "Nome, preço e categoria são obrigatórios" });
+            throw new MissingValues({ nome, preco, categoryId });
         }
 
         const product = await Product.findByPk(id);
@@ -49,7 +51,7 @@ class productController {
 
         const produtoExiste = await Product.findOne({ where: { name: nome } });
         if (produtoExiste && produtoExiste.id !== id) {
-            return res.status(409).json({ message: "Esse produto já existe" });
+            throw new Conflict(`O produto ${nome} já existe`);
         }
 
         product.name = nome;
