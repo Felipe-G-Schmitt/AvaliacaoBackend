@@ -3,6 +3,7 @@ const MissingValues = require('../errors/missing-values');
 const ProdOrder = require('../models/prodOrder');
 const Order = require('../models/order');
 const Product = require('../models/product');
+const { generateOrderLinks } = require('../utils/hypermedia');
 
 class OrderController {
     async getOrder(req, res) {
@@ -15,10 +16,13 @@ class OrderController {
                 }
             }]
         });
-        if (!orders || orders.length === 0) {
+
+        const ordersWithLinks = orders.map(order => generateOrderLinks(order.toJSON())); //hypermidia
+        if (!ordersWithLinks || ordersWithLinks.length === 0) {
             throw new NotFound('Nenhum pedido encontrado');
         }
-        return res.json(orders);
+
+        return res.json(ordersWithLinks);
     }
 
     async getOrderById(req, res) {
@@ -33,12 +37,13 @@ class OrderController {
             }
             }]
         });
+        const orderWithLinks = generateOrderLinks(order.toJSON()); //hypermidia
 
         if (!order) {
             throw new NotFound(`Pedido com ID ${id} não encontrado`);
         }
 
-        res.json({ order });
+        return res.json(orderWithLinks);
     }
 
     async createOrder(req, res) {
@@ -49,6 +54,7 @@ class OrderController {
         }
 
         const order = await Order.create({ userId });
+        
 
         const items = products.map(p => ({
             orderId: order.id,
@@ -66,14 +72,17 @@ class OrderController {
             }]
         });
 
+        const orderWithLinks = generateOrderLinks(order.toJSON()); //hypermidia
+
+        res.status(201).json(orderWithLinks);
         res.status(201).json({ order: newOrder });
     }
 
     async UpdateOrder(req, res) {
         const { id } = req.params;
-        const { userId, productId, quantity } = req.body;
+        const { userId, products } = req.body;
 
-        if (!userId || !productId || !quantity) {
+        if (!userId || !Array.isArray(products) || products.length === 0) {
             throw new MissingValues({ userId, productId, quantity });
         }
 
@@ -83,12 +92,33 @@ class OrderController {
         }
 
         order.userId = userId;
-        order.productId = productId;
-        order.quantity = quantity;
-
         await order.save();
 
-        res.json(order);
+        // Tira os produtos antigos
+        await ProdOrder.destroy({ where: { orderId: id } });
+
+        // Cria novos
+        const newItems = products.map(p => ({
+            orderId: id,
+            productId: p.productId,
+            quantity: p.quantity
+        }));
+
+        // Cria de uma vez
+        await ProdOrder.bulkCreate(newItems);
+
+        // Procura o pedido atualizado
+        const updatedOrder = await Order.findByPk(id, {
+            include: [{
+                model: Product,
+                as: 'products',
+                through: { attributes: ['quantity'] }
+            }]
+        });
+
+        const orderWithLinks = generateOrderLinks(updatedOrder.toJSON());
+
+        return res.json(orderWithLinks);
     }
 
     async DeleteOrder(req, res) {
@@ -101,9 +131,14 @@ class OrderController {
 
         await order.destroy();
 
-        res.status(204).send({ message: "Pedido deletado" });
+        res.status(200).json({ 
+            message: "Pedido deletado",
+                links: [
+                { rel: "create", method: "POST", href: "/order" },
+                { rel: "all", method: "GET", href: "/order" }
+            ]
+        });
     }
-
 }
 
 module.exports = new OrderController();

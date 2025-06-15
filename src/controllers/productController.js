@@ -7,7 +7,13 @@ const { generateProductLinks } = require('../utils/hypermedia');
 class productController {
     async getProduct(req, res) {
         const products = await Product.findAll(); 
-        return res.json(products);
+        const productWithLinks = products.map(product => generateProductLinks(product.toJSON())); // hypermidia
+
+        if (!products || products.length === 0) {
+            throw new NotFound('Nenhum produto encontrado');
+        }
+
+        return res.json(productWithLinks);
     }
 
     async getProductById(req, res) {
@@ -31,8 +37,9 @@ class productController {
         }
 
         const product = await Product.create({ name: nome, price : preco, categoryId: categoryId }); 
+        const productWithLinks = generateProductLinks(product.toJSON()); //hypermidia
 
-        res.status(201).json(product);
+        res.status(201).json(productWithLinks);
     }
 
     async UpdateProduct(req, res) {
@@ -59,7 +66,9 @@ class productController {
 
         await product.save();
 
-        res.json(product);
+        const productWithLinks = generateProductLinks(product.toJSON()); //hypermidia
+
+        res.json(productWithLinks);
     }
 
     async DeleteProduct(req, res) {
@@ -69,10 +78,16 @@ class productController {
         if (!product) {
             throw new NotFound(`Produto com ID ${id} não encontrado`);
         }
-
+        
         await product.destroy();
-
-        res.status(204).send({ message: "Produto deletado" });
+        
+        res.status(200).send({ 
+            message: "Produto deletado",
+                links: [
+                { rel: "create", method: "POST", href: "/product" },
+                { rel: "all", method: "GET", href: "/product" }
+            ]
+        });
     }
 }
 

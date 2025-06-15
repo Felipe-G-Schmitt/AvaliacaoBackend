@@ -2,11 +2,18 @@ const Conflict = require('../errors/conflict');
 const MissingValues = require('../errors/missing-values');
 const NotFound = require('../errors/not-found');
 const Category = require('../models/category')
+const { generateCategoryLinks } = require('../utils/hypermedia');
 
 class categoryController {
     async getCategory(req, res) {
         const categories = await Category.findAll();
-        return res.json(categories);
+        const categoriesWithLinks = categories.map(category => generateCategoryLinks(category.toJSON())); // hypermidia
+
+        if (!categories || categories.length === 0) {
+            throw new NotFound('Nenhuma categoria encontrada');
+        }
+
+        return res.json(categoriesWithLinks);
     }
 
     async getCategoryById(req, res) {  
@@ -17,7 +24,7 @@ class categoryController {
             throw new NotFound(`Categoria com ID ${id} não encontrada`);
         }
 
-        res.json(category);
+        return res.json(generateCategoryLinks(category.toJSON)); // hypermidia
     }
 
     async createCategory(req, res) {
@@ -32,8 +39,9 @@ class categoryController {
         }
 
         const category = await Category.create({ name: nome });
+        const categoryWithLinks = generateCategoryLinks(category.toJSON()); // hypermidia
 
-        res.status(201).json(category);
+        res.status(201).json(categoryWithLinks);
     }
 
     async UpdateCategory(req, res) {
@@ -58,20 +66,27 @@ class categoryController {
 
         await category.save();
 
-        res.json(category);
+        const categoryWithLinks = generateCategoryLinks(category.toJSON()); // hypermidia
+        res.json(categoryWithLinks);
     }
 
     async DeleteCategory(req, res) {
         const { id } = req.params;
-
         const category = await Category.findByPk(id);
+
         if (!category) {
             throw new NotFound(`Categoria com ID ${id} não encontrada`);
         }
 
         await category.destroy();
 
-        res.status(204).send({ message: "Categoria deletado" });
+        res.status(200).send({ 
+            message: "Categoria deletado",
+                links: [
+                { rel: "create", method: "POST", href: "/categories" },
+                { rel: "all", method: "GET", href: "/categories" }
+            ]
+        });
     }
 }
 

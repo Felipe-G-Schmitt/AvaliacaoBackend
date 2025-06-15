@@ -42,7 +42,7 @@ class UserController {
         return res.json(usersWithLinks);
     }
 
-    async getUserById(req, res, next) {  
+    async getUserById(req, res) {  
         const { id } = req.params;
         const user = await User.findByPk(id);
         const userWithLinks = generateUserLinks(user.toJSON());
@@ -54,10 +54,9 @@ class UserController {
         return res.json(userWithLinks);
     }
 
-    async UpdateUser(req, res, next) {
+    async UpdateUser(req, res) {
         const { id } = req.params;
         const { nome, email, senha } = req.body;
-        const userWithLinks = generateUserLinks(user.toJSON());
 
         if (!nome || !email || !senha) {
             throw new MissingValues({ nome, email, senha });
@@ -79,17 +78,16 @@ class UserController {
         user.email = email;
         user.password = senhaCriptografada;
 
-        await user.save();     
+        await user.save();    
+        
+        const userWithLinks = generateUserLinks(user.toJSON());
 
         res.json(userWithLinks);
     }
 
-
-    async DeleteUser(req, res, next) {
+    async DeleteUser(req, res) {
         const { id } = req.params;
-
         const user = await User.findByPk(id);
-        const userWithLinks = generateUserLinks(user.toJSON());
         
         if (!user) {
             throw new NotFound(`Usuário com ID ${id} não encontrado`);
@@ -100,8 +98,8 @@ class UserController {
         res.status(200).json({
             message: "Usuário deletado com sucesso",
                 links: [
-                { rel: "create", method: "POST", href: "/users" },
-                { rel: "all", method: "GET", href: "/users" }
+                { rel: "create", method: "POST", href: "/user" },
+                { rel: "all", method: "GET", href: "/user" }
             ]
         });
     }

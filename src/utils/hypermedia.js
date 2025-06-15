@@ -3,7 +3,6 @@ const generateUserLinks = (user) => ({
   links: [
     { rel: "self", method: "GET", href: `/users/${user.id}` },
     { rel: "update", method: "PUT", href: `/users/${user.id}` },
-    { rel: "delete", method: "DELETE", href: `/users/${user.id}` },
     { rel: "all", method: "GET", href: `/users` }
   ]
 });
@@ -13,7 +12,6 @@ const generateProductLinks = (product) => ({
   links: [
     { rel: "self", method: "GET", href: `/products/${product.id}` },
     { rel: "update", method: "PUT", href: `/products/${product.id}` },
-    { rel: "delete", method: "DELETE", href: `/products/${product.id}` },
     { rel: "all", method: "GET", href: `/products` }
   ]
 });
@@ -23,7 +21,6 @@ const generateCategoryLinks = (category) => ({
   links: [
     { rel: "self", method: "GET", href: `/categories/${category.id}` },
     { rel: "update", method: "PUT", href: `/categories/${category.id}` },
-    { rel: "delete", method: "DELETE", href: `/categories/${category.id}` },
     { rel: "all", method: "GET", href: `/categories` }
   ]
 });
@@ -33,7 +30,6 @@ const generateOrderLinks = (order) => ({
   links: [
     { rel: "self", method: "GET", href: `/orders/${order.id}` },
     { rel: "update", method: "PUT", href: `/orders/${order.id}` },
-    { rel: "delete", method: "DELETE", href: `/orders/${order.id}` },
     { rel: "all", method: "GET", href: `/orders` }
   ]
 });
