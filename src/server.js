@@ -1,8 +1,10 @@
 const express = require('express');
+const swaggerUi = require('swagger-ui-express');
+const swaggerOptions = require('./docs/swagger');
 const database = require('./config/database');
 const userRoutes = require('./routes/userRoutes');
 const authMiddle = require('./middlewares/authMiddle');
-const loginMiddle = require('./middlewares/loginMiddle');
+const loginRoutes = require('./routes/loginRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
@@ -15,14 +17,14 @@ app.get('/', (req, res) => {
     res.send('API de Avaliação Backend');
 });
 
-app.use('/api', registerRoutes);
-app.post('/api/login', loginMiddle.login);
+app.use(registerRoutes);
+app.use(loginRoutes);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerOptions));
 
-app.use(authMiddle.ValidarToken);
-app.use('/api', userRoutes);
-app.use('/api', categoryRoutes);
-app.use('/api', productRoutes);
-app.use('/api', orderRoutes);
+app.use('/api', authMiddle.ValidarToken, userRoutes);
+app.use('/api', authMiddle.ValidarToken, categoryRoutes);
+app.use('/api', authMiddle.ValidarToken, productRoutes);
+app.use('/api', authMiddle.ValidarToken, orderRoutes);
 
 app.use((err, req, res, next) => {
     if (err.statusCode) {
@@ -37,6 +39,7 @@ database.db.sync({ force: true })
     .then(() => {
         app.listen(3000, () => {
             console.log('Server is running on http://localhost:3000')
+            console.log('Swagger: http://localhost:3000/api-docs');
         })
     })
     .catch(err => {
