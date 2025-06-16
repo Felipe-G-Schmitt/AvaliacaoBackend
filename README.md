@@ -1,4 +1,4 @@
-# Aplicação MVC de gerenciamento de projetos com pedidos e categorias
+# Aplicação MVC de gerenciamento de produtos com pedidos e categorias
 
 API REST construída com Node.js, Express e Sequelize que permite o gerenciamento de:
 
@@ -25,42 +25,47 @@ A autenticação é feita via JWT e o banco de dados utilizado é MySQL.
 
 ## Estrutura de Pastas
 
-/src
-└──/config
-  └── database.js
-└──/controllers
-  ├── userController.js
-  ├── projectController.js
-  ├── categoryController.js
-  └── orderController.js
-└──/models
-  ├── user.js
-  ├── project.js
-  ├── category.js
-  ├── order.js
-  └── prodOrder.js (tabela associativa)
-└──/errors
-  ├── conflict.js
-  ├── email-validate.js
-  ├── errorMiddle.js
-  ├── not-found.js
-  ├── token-validate.js
-  └── missing-values.js
-└──/routes
-  ├── userRoutes.js
-  ├── projectRoutes.js
-  ├── categoryRoutes.js
-  ├── loginRoutes.js
-  ├── registerRoutes.js
-  └── orderRoutes.js
-└──/middlewares
-  ├── authMiddle.js
-  ├── loginMiddle.js
-  └── registerMiddle.js
-└──/docs
-  └── swagger.js
-server.js
+/config
+  - database.js
 
+/controllers
+  - userController.js
+  - productController.js
+  - categoryController.js
+  - orderController.js
+
+/models
+  - user.js
+  - product.js
+  - category.js
+  - order.js
+  - prodOrder.js
+
+/routes
+  - userRoutes.js
+  - productRoutes.js
+  - categoryRoutes.js
+  - loginRoutes.js
+  - registerRoutes.js
+  - orderRoutes.js
+
+/middlewares
+  - authMiddle.js
+  - loginMiddle.js
+  - registerMiddle.js
+
+/errors
+  - conflict.js
+  - email-validate.js
+  - errorMiddle.js
+  - not-found.js
+  - token-validate.js
+  - missing-values.js
+
+/docs
+  - swagger.js
+
+server.js
 
 ---
 
@@ -124,7 +129,7 @@ Tabela associativa entre `order` e `product` com o campo:
 ## Como Executar o Projeto
 
 **1. Clone o repositório**
-git clone git@github.com:Felipe-G-Schmitt/AtividadeMVC.git
+git clone git@github.com:Felipe-G-Schmitt/AvaliacaoBackend.git
 
 **2. Instale as dependências**
 npm install
